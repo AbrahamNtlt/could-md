@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+/*
+ * @Description: 入口
+ * @Author: Achieve
+ * @Date: 2019-12-10 09:59:11
+ * @LastEditTime: 2019-12-10 19:48:15
+ */
+import React from 'react'
+import './App.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
+
+import FileSearch from './components/FileSearch'
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App container-fluid">
+      <div className="row">
+        <div className="col-3 left-panel">
+          <FileSearch  onFileSearch={ ()=>{}}/>
+        </div>
+        <div className="col-9 left-panel bg-primary">
+          <h1>右侧</h1>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

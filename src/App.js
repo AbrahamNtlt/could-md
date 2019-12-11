@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-11 13:30:12
+ * @LastEditTime: 2019-12-11 15:45:08
  */
 import React from 'react'
 import './App.css'
@@ -11,8 +11,10 @@ import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
 import FileSearch from './components/FileSearch'
 import FileList from './components/FileList'
 import ButtomBtn from './components/ButtomBtn'
+import TabList from './components/TabList'
 
 function App() {
+  let unsaveIds = ['1']
   let files = [
     {
       id: '1',
@@ -30,7 +32,12 @@ function App() {
   const openClickedFile = () => {}
   const deteleFile = () => {}
   const saveEdit = (id, newVal) => {}
-
+  const handeCloseTab = fileId => {
+    console.log(`close ${fileId}`)
+  }
+  const handeTabClick = fileId => {
+    console.log(`click ${fileId}`)
+  }
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
@@ -61,8 +68,14 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="col-9 left-panel bg-primary">
-          <h1>右侧</h1>
+        <div className="col-9 left-panel">
+          <TabList
+            files={files}
+            activeId={files[0].id}
+            onCloseTab={handeCloseTab}
+            onTabClick={handeTabClick}
+            unsaveIds={unsaveIds}
+          />
         </div>
       </div>
     </div>

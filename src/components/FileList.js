@@ -2,7 +2,7 @@
  * @Description:左侧文件列表
  * @Author: Achieve
  * @Date: 2019-12-11 10:41:16
- * @LastEditTime: 2019-12-11 13:44:56
+ * @LastEditTime: 2019-12-11 14:56:43
  */
 import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,7 +18,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
     <ul className="list-group list-group-flush file-list">
       {files.map(file => (
         <li
-          className="list-group-item bg-light row no-gutter d-flex align-items-center file-item"
+          className="list-group-item bg-light row no-gutter d-flex align-items-center file-item mx-0"
           key={file.id}
         >
           {file.id !== editStatus && (
@@ -27,7 +27,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
                 <FontAwesomeIcon size="lg" icon={faMarkdown} />
               </span>
               <span
-                className="col-7 c-link"
+                className="col-6 c-link"
                 onClick={() => {
                   onFileClick(file.id)
                 }}
@@ -36,7 +36,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
               </span>
               <button
                 type="button"
-                className="icon-button col-1"
+                className="icon-button col-2"
                 onClick={() => {
                   setValue(file.title)
                   setEditStatus(file.id)
@@ -47,7 +47,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
               </button>
               <button
                 type="button"
-                className="icon-button col-1"
+                className="icon-button col-2"
                 onClick={() => {
                   onFileDelete(file.id)
                 }}

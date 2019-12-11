@@ -1,0 +1,24 @@
+.tablist-component {
+  .close-icon {
+    visibility: hidden;
+  }
+  .nav-link:hover .close-icon,
+  .nav-link.active .close-icon {
+    visibility: visible;
+  }
+  .unsaved-icon {
+    background: #d9534f;
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+  }
+  .withUnsaved.nav-link .close-icon {
+    display: none;
+  }
+  .withUnsaved.nav-link:hover .close-icon {
+    display: inline-block;
+  }
+  .withUnsaved.nav-link:hover .unsaved-icon {
+    display: none;
+  }
+}

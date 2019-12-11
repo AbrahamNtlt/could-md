@@ -2,37 +2,48 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-10 17:59:26
- * @LastEditTime: 2019-12-10 19:48:29
+ * @LastEditTime: 2019-12-11 12:40:16
  */
 import React, { useState, useRef, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
 import PropTyes from 'prop-types'
+import useKeyPress from '../hooks/useKeyPress'
 
 const FileSearch = ({ title, onFileSearch }) => {
   const [inputActive, setInputActive] = useState(false)
   const [value, setValue] = useState('')
 
+  const enterPressed = useKeyPress(13)
+  const escPressed = useKeyPress(27)
+
   let node = useRef(null)
 
-  const closeSearch = event => {
-    event.preventDefault()
+  const closeSearch = () => {
     setInputActive(false)
     setValue('')
   }
   useEffect(() => {
-    const handleInputEvent = e => {
-      const { keyCode } = e
-      if (keyCode === 13 && inputActive) {
+    // const handleInputEvent = e => {
+    //   const { keyCode } = e 
+    //   if (keyCode === 13 && inputActive) {
+    //     onFileSearch(value)
+    //   } else if (keyCode === 27 && inputActive) {
+    //     closeSearch(e)
+    //   }
+    // }
+    // document.addEventListener('keyup', handleInputEvent)
+    // return () => {
+    //   document.removeEventListener('keyup', handleInputEvent)
+    // }
+    if(inputActive){
+      if(enterPressed){
         onFileSearch(value)
-      } else if (keyCode === 27 && inputActive) {
-        closeSearch(e)
+      }else if(escPressed){
+        closeSearch()
       }
     }
-    document.addEventListener('keyup', handleInputEvent)
-    return () => {
-      document.removeEventListener('keyup', handleInputEvent)
-    }
+
   })
   useEffect(() => {
     if (inputActive) {

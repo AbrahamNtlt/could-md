@@ -2,7 +2,7 @@
  * @Description: 底部button
  * @Author: Achieve
  * @Date: 2019-12-11 12:39:46
- * @LastEditTime: 2019-12-11 13:19:51
+ * @LastEditTime: 2019-12-11 18:47:33
  */
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -12,7 +12,7 @@ const Bottombtn = ({ text, colorClass, icon, onBtnClick }) => {
   return (
     <button
       type="button"
-      className={`btn btn-block no-border ${colorClass}`}
+      className={`btn btn-block no-border no-border ${colorClass}`}
       onClick={onBtnClick}
     >
       <FontAwesomeIcon className="mr-2" size="lg" icon={icon} />

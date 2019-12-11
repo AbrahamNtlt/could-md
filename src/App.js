@@ -2,16 +2,19 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-11 15:45:08
+ * @LastEditTime: 2019-12-11 16:08:38
  */
 import React from 'react'
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import SimpleMDE from 'react-simplemde-editor'
+import 'easymde/dist/easymde.min.css'
 import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
 import FileSearch from './components/FileSearch'
 import FileList from './components/FileList'
 import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
+import { file } from '_@babel_types@7.7.4@@babel/types/lib'
 
 function App() {
   let unsaveIds = ['1']
@@ -75,6 +78,15 @@ function App() {
             onCloseTab={handeCloseTab}
             onTabClick={handeTabClick}
             unsaveIds={unsaveIds}
+          />
+          <SimpleMDE
+            value={files[0].body}
+            onChange={val => {
+              console.log(val)
+            }}
+            options={{
+              minHeight: '600px'
+            }}
           />
         </div>
       </div>

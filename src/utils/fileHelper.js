@@ -2,10 +2,10 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-12 14:18:57
- * @LastEditTime: 2019-12-12 14:33:54
+ * @LastEditTime: 2019-12-12 18:08:54
  */
-const fs = require('fs').promises
-const path = require('path')
+const fs = window.require('fs').promises
+const path = window.require('path')
 
 const fileHelper = {
   readFile(path) {
@@ -22,4 +22,4 @@ const fileHelper = {
   }
 }
 
-module.exports = fileHelper
+export default fileHelper

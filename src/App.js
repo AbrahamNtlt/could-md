@@ -2,38 +2,41 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-12 12:51:13
+ * @LastEditTime: 2019-12-12 18:36:14
  */
 import React, { useState } from 'react'
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import SimpleMDE from 'react-simplemde-editor'
 import 'easymde/dist/easymde.min.css'
-import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faFileImport, faSave } from '@fortawesome/free-solid-svg-icons'
 import FileSearch from './components/FileSearch'
 import FileList from './components/FileList'
 import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
+import fileHelper from './utils/fileHelper'
+import { objTOArr } from './utils/helper'
+
+const { join } = window.require('path')
+const { remote } = window.require('electron')
+const Stroe = window.require('electron-store')
+const fileStore = new Stroe({ name: 'FIles Data' })
+// 新建,删除,重命名
+const saveFilesToStore = files => {
+  const filesStoreObj = objTOArr(files).reduce((result, file) => {
+    const { id, path, title, createAt } = file
+    result[id] = { id, path, title, createAt }
+    return result
+  }, {})
+  fileStore.set('files', filesStoreObj)
+}
+
+const savedLocation = remote.app.getPath('documents')
 
 function App() {
-  let defaultfiles = [
-    {
-      id: '1',
-      title: 'first post',
-      body: 'showbe',
-      createAt: 12312312
-    },
-    {
-      id: '2',
-      title: 'sected post',
-      body: 'showbe22',
-      createAt: 1231313
-    }
-  ]
-
   // state
-  const [files, setFiles] = useState(defaultfiles)
+  const [files, setFiles] = useState(fileStore.get('files') || [])
   const [activefileID, setActivefileID] = useState()
   const [openfileIDs, setOpenfileIDs] = useState([])
   const [unsavedfileIDs, setUnsavedfileIDs] = useState([])
@@ -57,14 +60,29 @@ function App() {
   // 打开文件
   const fileClick = fileID => {
     setActivefileID(fileID)
+
+    const currentFile = files[fileID]
+    if (!currentFile.isLoaded) {
+      fileHelper.readFile(currentFile.path).then(val => {
+        const newFile = { ...currentFile, body: val, isLoaded: true }
+        setFiles({ ...files, [fileID]: newFile })
+      })
+    }
     if (!openfileIDs.includes(fileID)) {
       setOpenfileIDs([...openfileIDs, fileID])
     }
   }
   const deteleFile = fileID => {
-    const newFiles = files.filter(file => file.id !== fileID)
-    setFiles(newFiles)
-    handeCloseTab(fileID)
+    if (files[fileID].isNew) {
+      const { [fileID]: val, newFiles } = files
+      setFiles(newFiles)
+    } else {
+      fileHelper.detleFile(files[fileID].path).then(() => {
+        const { [fileID]: val, newFiles } = files
+        setFiles(newFiles)
+        handeCloseTab(fileID)
+      })
+    }
   }
   const handeCloseTab = id => {
     const tabsWithout = openfileIDs.filter(fileID => fileID !== id)
@@ -102,15 +120,38 @@ function App() {
       setUnsavedfileIDs([...unsavedfileIDs, id])
     }
   }
-  const updateFileName = (id, title) => {
-    const newFiles = files.map(file => {
-      if (file.id === id) {
-        file.title = title
-        file.isNew = false
-      }
-      return file
-    })
-    setFiles(newFiles)
+  const updateFileName = (id, title, isNew) => {
+    const modifiedFile = { ...files[id], title, isNew: false }
+    const newFiles = { ...files, [id]: modifiedFile }
+    if (isNew) {
+      fileHelper
+        .writeFile(join(savedLocation, `${title}.md`), files[id].body)
+        .then(() => {
+          setFiles(newFiles)
+          saveFilesToStore(newFiles)
+        })
+    } else {
+      fileHelper
+        .renameFile(
+          join(savedLocation, `${files[id].title}.md`),
+          join(savedLocation, `${title}.md`)
+        )
+        .then(() => {
+          setFiles(newFiles)
+          saveFilesToStore(newFiles)
+        })
+    }
+  }
+  const saveCurrentFile = () => {
+    fileHelper
+      .writeFile(join(savedLocation, `${activeFile.title}.md`), activeFile.body)
+      .then(() => {
+        setUnsavedfileIDs(
+          unsavedfileIDs.filter(id => {
+            return id !== activeFile.id
+          })
+        )
+      })
   }
   return (
     <div className="App container-fluid px-0">
@@ -162,6 +203,12 @@ function App() {
                 options={{
                   minHeight: '600px'
                 }}
+              />
+              <ButtomBtn
+                text="保存"
+                colorClass="btn-success"
+                icon={faSave}
+                onBtnClick={saveCurrentFile}
               />
             </>
           )}

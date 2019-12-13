@@ -2,7 +2,7 @@
  * @Description:左侧文件列表
  * @Author: Achieve
  * @Date: 2019-12-11 10:41:16
- * @LastEditTime: 2019-12-12 15:58:26
+ * @LastEditTime: 2019-12-13 17:14:40
  */
 import React, { useState, useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -28,9 +28,10 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
       setEditStatus(newFile.id)
       setValue(newFile.title)
     }
-  })
+  },[])
   useEffect(() => {
-    if (enterPressed) {
+    if (enterPressed && editStatus) {
+      console.log(editStatus,value)
       if (value.trim()) {
         onSaveEdit(editStatus, value)
       } 

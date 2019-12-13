@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-12 18:36:14
+ * @LastEditTime: 2019-12-13 16:28:25
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -16,15 +16,16 @@ import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
 import fileHelper from './utils/fileHelper'
-import { objTOArr } from './utils/helper'
+import { objToArr, flattenArr } from './utils/helper'
 
 const { join } = window.require('path')
 const { remote } = window.require('electron')
 const Stroe = window.require('electron-store')
 const fileStore = new Stroe({ name: 'FIles Data' })
-// 新建,删除,重命名
+
+// 新建,删除,重命名 时更新
 const saveFilesToStore = files => {
-  const filesStoreObj = objTOArr(files).reduce((result, file) => {
+  const filesStoreObj = objToArr(files).reduce((result, file) => {
     const { id, path, title, createAt } = file
     result[id] = { id, path, title, createAt }
     return result
@@ -36,28 +37,28 @@ const savedLocation = remote.app.getPath('documents')
 
 function App() {
   // state
-  const [files, setFiles] = useState(fileStore.get('files') || [])
+  const [files, setFiles] = useState(fileStore.get('files') || {})
   const [activefileID, setActivefileID] = useState()
   const [openfileIDs, setOpenfileIDs] = useState([])
   const [unsavedfileIDs, setUnsavedfileIDs] = useState([])
-  const [searchedFiiles, setSearchedFiiles] = useState([])
-  const openFiles = openfileIDs.map(openfileID =>
-    files.find(file => file.id == openfileID)
-  )
-  const activeFile = files.find(file => file.id == activefileID)
-  const targetFile = id => {
-    return files.find(file => file.id == id)
-  }
+  const [searchedFiles, setSearchedFiles] = useState({})
+
+  const filesArr = objToArr(files)
+
+  const openFiles = openfileIDs.map(openfileID => files[openfileID])
+  const activeFile = files[activefileID]
+  // 左侧文件list
   const fileSearch = keyword => {
     let newFiles
-    if (keyword) {
-      newFiles = files.filter(file => file.title.includes(keyword))
+    if (keyword.trim()) {
+      newFiles = filesArr.filter(file => file.title.includes(keyword))
     } else {
-      newFiles = files
+      newFiles = filesArr
     }
-    setSearchedFiiles(newFiles)
+    setSearchedFiles(newFiles)
   }
-  // 打开文件
+  const fileListArr = searchedFiles.length > 0 ? searchedFiles : filesArr
+  // 点击文件(左侧)
   const fileClick = fileID => {
     setActivefileID(fileID)
 
@@ -65,13 +66,14 @@ function App() {
     if (!currentFile.isLoaded) {
       fileHelper.readFile(currentFile.path).then(val => {
         const newFile = { ...currentFile, body: val, isLoaded: true }
-        setFiles({ ...files, [fileID]: newFile })
+        setFiles([...files, newFile])
       })
     }
     if (!openfileIDs.includes(fileID)) {
       setOpenfileIDs([...openfileIDs, fileID])
     }
   }
+  // 删除文件
   const deteleFile = fileID => {
     if (files[fileID].isNew) {
       const { [fileID]: val, newFiles } = files
@@ -84,6 +86,7 @@ function App() {
       })
     }
   }
+  // 关闭标签
   const handeCloseTab = id => {
     const tabsWithout = openfileIDs.filter(fileID => fileID !== id)
     setOpenfileIDs(tabsWithout)
@@ -93,21 +96,25 @@ function App() {
       setActivefileID('')
     }
   }
+  // 点击标签
   const handeTabClick = fileID => {
     setActivefileID(fileID)
   }
-
+  // 新建文件
   const createNewFile = () => {
+    const newID = uuidv4()
     const newFile = {
-      id: uuidv4(),
+      id: newID,
       title: '新建md',
       body: '请输入markdown',
       createAt: new Date().getTime(),
       isNew: true
     }
-    const newFiles = [...files, newFile]
+    const newFiles = { ...files, [newID]: newFile }
+    console.log(newFiles)
     setFiles(newFiles)
   }
+  // 文档改变
   const fileChange = (id, val) => {
     const newFiles = files.map(file => {
       if (file.id === id) {
@@ -120,10 +127,11 @@ function App() {
       setUnsavedfileIDs([...unsavedfileIDs, id])
     }
   }
+  // 更新文件名
   const updateFileName = (id, title, isNew) => {
     const modifiedFile = { ...files[id], title, isNew: false }
     const newFiles = { ...files, [id]: modifiedFile }
-    if (isNew) {
+    if (true) {
       fileHelper
         .writeFile(join(savedLocation, `${title}.md`), files[id].body)
         .then(() => {
@@ -142,6 +150,7 @@ function App() {
         })
     }
   }
+  // 保存文档
   const saveCurrentFile = () => {
     fileHelper
       .writeFile(join(savedLocation, `${activeFile.title}.md`), activeFile.body)
@@ -159,7 +168,7 @@ function App() {
         <div className="col-3 left-panel">
           <FileSearch onFileSearch={fileSearch} />
           <FileList
-            files={searchedFiiles.length > 0 ? searchedFiiles : files}
+            files={fileListArr}
             onFileClick={fileClick}
             onFileDelete={deteleFile}
             onSaveEdit={updateFileName}
@@ -217,5 +226,4 @@ function App() {
     </div>
   )
 }
-
 export default App

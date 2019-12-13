@@ -2,7 +2,7 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-12 13:36:52
- * @LastEditTime: 2019-12-12 13:40:43
+ * @LastEditTime: 2019-12-13 16:25:37
  */
 export const flattenArr = arr => {
   return arr.reduce((map, item) => {
@@ -11,8 +11,8 @@ export const flattenArr = arr => {
   }, {})
 }
 
-export const objTOArr = () => {
-  return Object.keys(obj => {
-    return key => obj[key]
+export const objToArr = obj => {
+  return Object.keys(obj).map(key => {
+    return obj[key]
   })
 }

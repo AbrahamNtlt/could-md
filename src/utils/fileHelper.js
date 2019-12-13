@@ -2,10 +2,9 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-12 14:18:57
- * @LastEditTime: 2019-12-12 18:08:54
+ * @LastEditTime: 2019-12-13 17:13:55
  */
 const fs = window.require('fs').promises
-const path = window.require('path')
 
 const fileHelper = {
   readFile(path) {

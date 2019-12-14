@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-14 17:56:28
+ * @LastEditTime: 2019-12-14 18:06:27
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -33,7 +33,7 @@ const saveFilesToStore = files => {
   fileStore.set('files', filesStoreObj)
 }
 
-// fileStore.clear()
+fileStore.clear()
 
 const savedLocation = remote.app.getPath('documents')
 
@@ -77,11 +77,11 @@ function App() {
   // 删除文件
   const deteleFile = fileID => {
     if (files[fileID].isNew) {
-      const { [fileID]: val, newFiles } = files
-      setFiles(newFiles)
+      const { [fileID]: val, ...newFiles } = files
+      setFiles(newFiles || {})
     } else {
       fileHelper.detleFile(files[fileID].path).then(() => {
-        const { [fileID]: val, newFiles } = files
+        const { [fileID]: val, ...newFiles } = files
         setFiles(newFiles || {})
         handeCloseTab(fileID)
       })

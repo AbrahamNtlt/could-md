@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-14 16:39:25
+ * @LastEditTime: 2019-12-14 17:56:28
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -16,9 +16,9 @@ import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
 import fileHelper from './utils/fileHelper'
-import { objToArr } from './utils/helper'
+import { objToArr, flattenArr } from './utils/helper'
 
-const { join } = window.require('path')
+const { join, basename, extname, dirname } = window.require('path')
 const { remote } = window.require('electron')
 const Stroe = window.require('electron-store')
 const fileStore = new Stroe({ name: 'FIles Data' })
@@ -129,7 +129,9 @@ function App() {
   const updateFileName = (id, title, isNew) => {
     const modifiedFile = { ...files[id], title, isNew: false }
     const newFiles = { ...files, [id]: modifiedFile }
-    const newPath = join(savedLocation, `${title}.md`)
+    const newPath = isNew
+      ? join(savedLocation, `${title}.md`)
+      : join(dirname(files[id].path), `${title}.md`)
     if (isNew) {
       fileHelper.writeFile(newPath, files[id].body).then(() => {
         newFiles[id].path = newPath
@@ -137,13 +139,12 @@ function App() {
         saveFilesToStore(newFiles)
       })
     } else {
-      fileHelper
-        .renameFile(join(savedLocation, `${files[id].title}.md`), newPath)
-        .then(() => {
-          newFiles[id].path = newPath
-          setFiles(newFiles)
-          saveFilesToStore(newFiles)
-        })
+      const oldPath = files[id].path
+      fileHelper.renameFile(oldPath, newPath).then(() => {
+        newFiles[id].path = newPath
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
+      })
     }
   }
   // 保存文档
@@ -156,6 +157,50 @@ function App() {
             return id !== activeFile.id
           })
         )
+      })
+  }
+  // 点击导入
+  const importFiles = () => {
+    remote.dialog
+      .showOpenDialog({
+        title: '选择导入的 Markdown 文件',
+        properties: ['openFile', 'multiSelections'],
+        filters: [{ name: 'Markdown files', extensions: ['md'] }]
+      })
+      .then(data => {
+        if (!data.canceled) {
+          const paths = data.filePaths
+          if (Array.isArray(paths)) {
+            const filteredPaths = paths.filter(path => {
+              const aleadyAdded = Object.values(files).find(file => {
+                return file.path === path
+              })
+              return !aleadyAdded
+            })
+            const importFilesArr = filteredPaths.map(path => {
+              return {
+                id: uuidv4(),
+                title: basename(path, extname(path)),
+                path,
+                createAt: new Date().getTime()
+              }
+            })
+            const newFiles = { ...files, ...flattenArr(importFilesArr) }
+            setFiles(newFiles)
+            saveFilesToStore(newFiles)
+            if (importFilesArr.length) {
+              remote.dialog.showMessageBox({
+                type: 'info',
+                title: `导入成功`,
+                message: `成功导入${importFilesArr.length}个文件`
+              })
+            }
+          } else {
+          }
+        }
+      })
+      .catch(err => {
+        console.log(err)
       })
   }
   return (
@@ -183,7 +228,7 @@ function App() {
                 text="导入"
                 colorClass="btn-success"
                 icon={faFileImport}
-                onBtnClick={() => {}}
+                onBtnClick={importFiles}
               />
             </div>
           </div>

@@ -2,7 +2,7 @@
  * @Description:左侧文件列表
  * @Author: Achieve
  * @Date: 2019-12-11 10:41:16
- * @LastEditTime: 2019-12-13 17:14:40
+ * @LastEditTime: 2019-12-14 11:34:40
  */
 import React, { useState, useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -15,6 +15,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
   const [value, setValue] = useState('')
   let node = useRef(null)
   const enterPressed = useKeyPress(13)
+  const escPressed = useKeyPress(13)
   const closeSearch = file => {
     setValue('')
     setEditStatus(false)
@@ -22,20 +23,25 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
       onFileDelete(file.id)
     }
   }
+  // 新建文件
   useEffect(() => {
     const newFile = files.find(file => file.isNew)
-    if(newFile){
+    if (newFile) {
       setEditStatus(newFile.id)
       setValue(newFile.title)
     }
-  },[])
+  }, [files])
+  // enter 事件
   useEffect(() => {
+    const editItem = files.find(file => file.id === editStatus)
     if (enterPressed && editStatus) {
-      console.log(editStatus,value)
       if (value.trim()) {
-        onSaveEdit(editStatus, value)
-      } 
+        onSaveEdit(editStatus, value, editItem.isNew)
+      }
       setEditStatus(false)
+    }
+    if (escPressed && editStatus) {
+      closeSearch(editItem)
     }
   })
   useEffect(() => {
@@ -43,6 +49,11 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
       node.current.focus()
     }
   }, [editStatus])
+
+  const handleChagne = e => {
+    setValue(e.target.value)
+  }
+
   return (
     <ul className="list-group list-group-flush file-list">
       {files.map(file => (
@@ -91,9 +102,7 @@ const FileList = ({ files, onFileClick, onSaveEdit, onFileDelete }) => {
                 className="form-control col-10"
                 value={value}
                 size="lg"
-                onChange={e => {
-                  setValue(e.target.value)
-                }}
+                onChange={handleChagne}
               />
               <button
                 type="button"

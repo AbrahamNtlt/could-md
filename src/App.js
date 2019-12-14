@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-13 16:28:25
+ * @LastEditTime: 2019-12-14 15:38:20
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -33,6 +33,9 @@ const saveFilesToStore = files => {
   fileStore.set('files', filesStoreObj)
 }
 
+fileStore.clear()
+
+
 const savedLocation = remote.app.getPath('documents')
 
 function App() {
@@ -61,12 +64,11 @@ function App() {
   // 点击文件(左侧)
   const fileClick = fileID => {
     setActivefileID(fileID)
-
     const currentFile = files[fileID]
     if (!currentFile.isLoaded) {
       fileHelper.readFile(currentFile.path).then(val => {
         const newFile = { ...currentFile, body: val, isLoaded: true }
-        setFiles([...files, newFile])
+        setFiles({ ...files, newFile })
       })
     }
     if (!openfileIDs.includes(fileID)) {
@@ -111,18 +113,15 @@ function App() {
       isNew: true
     }
     const newFiles = { ...files, [newID]: newFile }
-    console.log(newFiles)
     setFiles(newFiles)
   }
   // 文档改变
   const fileChange = (id, val) => {
-    const newFiles = files.map(file => {
-      if (file.id === id) {
-        file.body = val
-      }
-      return file
-    })
-    setFiles(newFiles)
+    const newFiles = files[id]
+    if (newFiles) {
+      newFiles.body = val
+      setFiles(newFiles)
+    }
     if (!unsavedfileIDs.includes(id)) {
       setUnsavedfileIDs([...unsavedfileIDs, id])
     }
@@ -131,19 +130,16 @@ function App() {
   const updateFileName = (id, title, isNew) => {
     const modifiedFile = { ...files[id], title, isNew: false }
     const newFiles = { ...files, [id]: modifiedFile }
-    if (true) {
-      fileHelper
-        .writeFile(join(savedLocation, `${title}.md`), files[id].body)
-        .then(() => {
-          setFiles(newFiles)
-          saveFilesToStore(newFiles)
-        })
+    const defaultPath = join(savedLocation, `${title}.md`)
+    if (isNew) {
+      fileHelper.writeFile(defaultPath, files[id].body).then(() => {
+        newFiles[id].path = defaultPath
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
+      })
     } else {
       fileHelper
-        .renameFile(
-          join(savedLocation, `${files[id].title}.md`),
-          join(savedLocation, `${title}.md`)
-        )
+        .renameFile(join(savedLocation, `${files[id].title}.md`), defaultPath)
         .then(() => {
           setFiles(newFiles)
           saveFilesToStore(newFiles)

@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-14 15:38:20
+ * @LastEditTime: 2019-12-14 16:39:25
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -16,7 +16,7 @@ import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
 import fileHelper from './utils/fileHelper'
-import { objToArr, flattenArr } from './utils/helper'
+import { objToArr } from './utils/helper'
 
 const { join } = window.require('path')
 const { remote } = window.require('electron')
@@ -33,8 +33,7 @@ const saveFilesToStore = files => {
   fileStore.set('files', filesStoreObj)
 }
 
-fileStore.clear()
-
+// fileStore.clear()
 
 const savedLocation = remote.app.getPath('documents')
 
@@ -68,7 +67,7 @@ function App() {
     if (!currentFile.isLoaded) {
       fileHelper.readFile(currentFile.path).then(val => {
         const newFile = { ...currentFile, body: val, isLoaded: true }
-        setFiles({ ...files, newFile })
+        setFiles({ ...files, [fileID]: newFile })
       })
     }
     if (!openfileIDs.includes(fileID)) {
@@ -83,7 +82,7 @@ function App() {
     } else {
       fileHelper.detleFile(files[fileID].path).then(() => {
         const { [fileID]: val, newFiles } = files
-        setFiles(newFiles)
+        setFiles(newFiles || {})
         handeCloseTab(fileID)
       })
     }
@@ -116,31 +115,32 @@ function App() {
     setFiles(newFiles)
   }
   // 文档改变
-  const fileChange = (id, val) => {
-    const newFiles = files[id]
-    if (newFiles) {
-      newFiles.body = val
-      setFiles(newFiles)
+  const textChange = val => {
+    const newFile = files[activefileID]
+    if (newFile) {
+      newFile.body = val
+      setFiles({ ...files, [activefileID]: newFile })
     }
-    if (!unsavedfileIDs.includes(id)) {
-      setUnsavedfileIDs([...unsavedfileIDs, id])
+    if (!unsavedfileIDs.includes(activefileID)) {
+      setUnsavedfileIDs([...unsavedfileIDs, activefileID])
     }
   }
   // 更新文件名
   const updateFileName = (id, title, isNew) => {
     const modifiedFile = { ...files[id], title, isNew: false }
     const newFiles = { ...files, [id]: modifiedFile }
-    const defaultPath = join(savedLocation, `${title}.md`)
+    const newPath = join(savedLocation, `${title}.md`)
     if (isNew) {
-      fileHelper.writeFile(defaultPath, files[id].body).then(() => {
-        newFiles[id].path = defaultPath
+      fileHelper.writeFile(newPath, files[id].body).then(() => {
+        newFiles[id].path = newPath
         setFiles(newFiles)
         saveFilesToStore(newFiles)
       })
     } else {
       fileHelper
-        .renameFile(join(savedLocation, `${files[id].title}.md`), defaultPath)
+        .renameFile(join(savedLocation, `${files[id].title}.md`), newPath)
         .then(() => {
+          newFiles[id].path = newPath
           setFiles(newFiles)
           saveFilesToStore(newFiles)
         })
@@ -204,7 +204,7 @@ function App() {
               <SimpleMDE
                 key={activeFile && activeFile.id}
                 value={activeFile && activeFile.body}
-                onChange={fileChange}
+                onChange={textChange}
                 options={{
                   minHeight: '600px'
                 }}

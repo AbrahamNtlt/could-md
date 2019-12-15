@@ -33,7 +33,7 @@ const saveFilesToStore = files => {
   fileStore.set('files', filesStoreObj)
 }
 
-fileStore.clear()
+// fileStore.clear()
 
 const savedLocation = remote.app.getPath('documents')
 

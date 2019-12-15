@@ -12,7 +12,19 @@ export const flattenArr = arr => {
 }
 
 export const objToArr = obj => {
-  return Object.keys(obj).map(key => {
+  return Object.keys(obj).map(key => { 
     return obj[key]
   })
+}
+
+
+export const getParentNode =(node ,parentClass)=>{
+  let current = node
+  while(current !==null){
+    if(current.classList.contains(parentClass)){
+      return current
+    }
+    current = current.parentNode
+  }
+  return false
 }

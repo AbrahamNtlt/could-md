@@ -2,10 +2,10 @@
  * @Description: 原生目录
  * @Author: Achieve
  * @Date: 2019-12-16 11:47:57
- * @LastEditTime: 2019-12-16 12:14:47
+ * @LastEditTime: 2019-12-16 14:34:04
  */
 
-const { app, shell } = require('electron')
+const { app, shell, ipcMain } = require('electron')
 
 const template = [
   {
@@ -156,8 +156,10 @@ if (process.platform === 'darwin') {
       },
       {
         label: '设置',
-        role: 'services',
-        submenu: []
+        accelerator: 'Ctrl+,',
+        click: () => {
+          ipcMain.emit('open-settings-window')
+        }
       },
       {
         type: 'separator'
@@ -202,6 +204,14 @@ if (process.platform === 'darwin') {
       }
     )
   }
+} else {
+  template[0].push({
+    label: '设置',
+    accelerator: 'Ctrl+,',
+    click: () => {
+      ipcMain.emit('open-settings-window')
+    }
+  })
 }
 
 module.exports = template

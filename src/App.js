@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-16 12:47:04
+ * @LastEditTime: 2019-12-16 15:10:31
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -23,6 +23,7 @@ const { join, basename, extname, dirname } = window.require('path')
 const { remote } = window.require('electron')
 const Stroe = window.require('electron-store')
 const fileStore = new Stroe({ name: 'FIles Data' })
+const settingsStore = new Stroe({ name: 'Settings' })
 
 // 新建,删除,重命名 时更新
 const saveFilesToStore = files => {
@@ -36,7 +37,8 @@ const saveFilesToStore = files => {
 
 // fileStore.clear()
 
-const savedLocation = remote.app.getPath('documents')
+// const savedLocation = remote.app.getPath('documents')
+const savedLocation = settingsStore.get('savedFileLocation')
 
 function App() {
   // state

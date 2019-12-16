@@ -2,10 +2,12 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-10 16:00:08
- * @LastEditTime: 2019-12-10 16:07:12
+ * @LastEditTime: 2019-12-16 12:13:12
  */
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow,Menu } = require('electron')
 const isDev = require('electron-is-dev')
+const menuTemplate = require('./src/menuTemplate')
+
 let mainWin
 
 app.on('ready', () => {
@@ -18,4 +20,9 @@ app.on('ready', () => {
   })
   const url = isDev ? 'http://localhost:3000' : ''
   mainWin.loadURL(url)
+  
+  const menu = Menu.buildFromTemplate(menuTemplate)
+  Menu.setApplicationMenu(menu)
+
+
 })

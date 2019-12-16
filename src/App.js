@@ -2,7 +2,7 @@
  * @Description: 入口
  * @Author: Achieve
  * @Date: 2019-12-10 09:59:11
- * @LastEditTime: 2019-12-14 18:06:27
+ * @LastEditTime: 2019-12-16 12:47:04
  */
 import React, { useState } from 'react'
 import './App.css'
@@ -17,6 +17,7 @@ import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
 import fileHelper from './utils/fileHelper'
 import { objToArr, flattenArr } from './utils/helper'
+import useIpcRenderer from './hooks/useIpcRenderer'
 
 const { join, basename, extname, dirname } = window.require('path')
 const { remote } = window.require('electron')
@@ -116,13 +117,15 @@ function App() {
   }
   // 文档改变
   const textChange = val => {
-    const newFile = files[activefileID]
-    if (newFile) {
-      newFile.body = val
-      setFiles({ ...files, [activefileID]: newFile })
-    }
-    if (!unsavedfileIDs.includes(activefileID)) {
-      setUnsavedfileIDs([...unsavedfileIDs, activefileID])
+    if (val !== files[activefileID].body) {
+      const newFile = files[activefileID]
+      if (newFile) {
+        newFile.body = val
+        setFiles({ ...files, [activefileID]: newFile })
+      }
+      if (!unsavedfileIDs.includes(activefileID)) {
+        setUnsavedfileIDs([...unsavedfileIDs, activefileID])
+      }
     }
   }
   // 更新文件名
@@ -149,15 +152,20 @@ function App() {
   }
   // 保存文档
   const saveCurrentFile = () => {
-    fileHelper
-      .writeFile(join(savedLocation, `${activeFile.title}.md`), activeFile.body)
-      .then(() => {
-        setUnsavedfileIDs(
-          unsavedfileIDs.filter(id => {
-            return id !== activeFile.id
-          })
+    if (activeFile) {
+      fileHelper
+        .writeFile(
+          join(savedLocation, `${activeFile.title}.md`),
+          activeFile.body
         )
-      })
+        .then(() => {
+          setUnsavedfileIDs(
+            unsavedfileIDs.filter(id => {
+              return id !== activeFile.id
+            })
+          )
+        })
+    }
   }
   // 点击导入
   const importFiles = () => {
@@ -203,6 +211,12 @@ function App() {
         console.log(err)
       })
   }
+  useIpcRenderer({
+    'ctreate-file': createNewFile,
+    'save-edit-file': saveCurrentFile,
+    'search-file': fileSearch,
+    'import-file': importFiles
+  })
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
@@ -251,7 +265,7 @@ function App() {
                 value={activeFile && activeFile.body}
                 onChange={textChange}
                 options={{
-                  minHeight: '600px'
+                  minHeight: '400px'
                 }}
               />
               <ButtomBtn

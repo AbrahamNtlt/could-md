@@ -1,6 +1,7 @@
 {
   "name": "cloud-doc",
   "version": "0.1.0",
+  "author": "achieve",
   "private": true,
   "main": "main.js",
   "dependencies": {
@@ -20,6 +21,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0",
+    "electron-is-dev": "^1.1.0",
     "react-simplemde-editor": "^4.1.0",
     "uuid": "^3.3.3"
   },
@@ -28,7 +30,29 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "concurrently \"wait-on http://localhost:3000 &&  electron .\" \"cross-env BROWSER=none npm start\""
+    "dev": "concurrently \"wait-on http://localhost:3000 &&  electron .\" \"cross-env BROWSER=none npm start\"",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "homepage": "./",
+  "build": {
+    "electronDownload": {
+      "mirror": "https://npm.taobao.org/mirrors/electron/"
+    },
+    "appId": "cloudDoc",
+    "productName": "练手文案",
+    "copyright": "Copyright © 2019 ${author}",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "settings/**/*",
+      "package.json",
+      "main.js",
+      "./src/menuTemplate.js",
+      "./src/AppWindow.js",
+      "./src/utils/QiniuManager.js"
+    ],
+    "extends": null
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -49,7 +73,7 @@
     "concurrently": "^5.0.1",
     "cross-env": "^6.0.3",
     "electron": "^7.1.4",
-    "electron-is-dev": "^1.1.0",
+    "electron-builder": "^21.2.0",
     "wait-on": "^3.3.0"
   }
 }

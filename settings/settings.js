@@ -1,8 +1,8 @@
 /*
- * @Description:
+ * @Description:设置
  * @Author: Achieve
  * @Date: 2019-12-16 14:21:01
- * @LastEditTime: 2019-12-16 15:08:04
+ * @LastEditTime: 2019-12-17 09:36:31
  */
 const { remote } = require('electron')
 const Store = require('electron-store')

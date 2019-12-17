@@ -2,7 +2,7 @@
  * @Description:
  * @Author: Achieve
  * @Date: 2019-12-10 16:00:08
- * @LastEditTime: 2019-12-16 14:41:16
+ * @LastEditTime: 2019-12-17 17:28:23
  */
 const { app, Menu, ipcMain } = require('electron')
 const isDev = require('electron-is-dev')
@@ -32,6 +32,7 @@ app.on('ready', () => {
       height: 400,
       parent: mainWin
     })
+    settingsWin.removeMenu()
     settingsWin.on('closed', () => {
       settingsWin = null
     })

@@ -2,9 +2,11 @@
  * @Description: 七牛云的管理方法
  * @Author: Achieve
  * @Date: 2019-12-16 16:37:22
- * @LastEditTime: 2019-12-17 15:39:25
+ * @LastEditTime: 2019-12-17 17:12:20
  */
 const qiniu = require('qiniu')
+const axios = require('axios')
+const fs = require('fs')
 
 class QiniuManager {
   constructor(accessKey, secretKey, bucket) {
@@ -52,17 +54,41 @@ class QiniuManager {
       )
     })
   }
+  downloadFile(key, locationPath) {
+    return this.generateDownloadLink(key)
+      .then(link => {
+        const timeStamp = new Date().getTime()
+        const url = `${link}?timestamp=${timeStamp}`
+        console.log(url)
+        return axios({
+          url,
+          method: 'GET',
+          responseType: 'stream',
+          headers: { 'Cache-Control': 'no-cache' }
+        }).then(res => {
+          const writer = fs.createWriteStream(locationPath)
+          res.data.pipe(writer)
+          return new Promise((resolve, reject) => {
+            writer.on('finish', resolve)
+            writer.on('error', reject)
+          })
+        })
+      })
+      .catch(err => {
+        return Promise.reject({ err: err.response })
+      })
+  }
   generateDownloadLink(key) {
     const domainPromise = this.publicBucketDomain
       ? Promise.resolve([this.publicBucketDomain])
       : this.geBucketDomain()
     return domainPromise.then(data => {
       if (Array.isArray(data) && data.length > 0) {
-        const pattern = /^https?/
+        const pattern = /^http?/
         const domain = data[0]
         this.publicBucketDomain = pattern.test(domain)
           ? domain
-          : `https://${domain}`
+          : `http://${domain}`
         return this.bucketManager.publicDownloadUrl(
           this.publicBucketDomain,
           key

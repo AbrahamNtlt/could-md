@@ -15,17 +15,20 @@
   color: #ccc;
   text-align: center;
 }
-.left-panel{
+.left-panel {
   min-height: 100vh;
   position: relative;
 }
 
-.button-group{
+.button-group {
   position: absolute;
   width: 100%;
   bottom: 0;
 }
 
-.no-border{
+.no-border {
   border-radius: 0 !important;
+}
+.CodeMirror-scroll {
+  height: 600px !important;
 }

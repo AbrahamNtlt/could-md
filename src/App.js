@@ -9,27 +9,30 @@ import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import SimpleMDE from 'react-simplemde-editor'
 import 'easymde/dist/easymde.min.css'
-import { faPlus, faFileImport, faSave } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
 import FileSearch from './components/FileSearch'
 import FileList from './components/FileList'
 import ButtomBtn from './components/ButtomBtn'
 import TabList from './components/TabList'
 import uuidv4 from 'uuid/v4'
 import fileHelper from './utils/fileHelper'
-import { objToArr, flattenArr } from './utils/helper'
+import { objToArr, flattenArr, timestampToString } from './utils/helper'
 import useIpcRenderer from './hooks/useIpcRenderer'
 
 const { join, basename, extname, dirname } = window.require('path')
-const { remote } = window.require('electron')
+const { remote, ipcRenderer } = window.require('electron')
 const Stroe = window.require('electron-store')
 const fileStore = new Stroe({ name: 'FIles Data' })
 const settingsStore = new Stroe({ name: 'Settings' })
-
+const getAutoSync = () =>
+  ['accessKey', 'secretKey', 'bucketName', 'enableAutoSync'].every(
+    key => !!settingsStore.get(key)
+  )
 // 新建,删除,重命名 时更新
 const saveFilesToStore = files => {
   const filesStoreObj = objToArr(files).reduce((result, file) => {
-    const { id, path, title, createAt } = file
-    result[id] = { id, path, title, createAt }
+    const { id, path, title, createAt,isSynced } = file
+    result[id] = { id, path, title,isSynced, createAt }
     return result
   }, {})
   fileStore.set('files', filesStoreObj)
@@ -154,20 +157,13 @@ function App() {
   }
   // 保存文档
   const saveCurrentFile = () => {
-    if (activeFile) {
-      fileHelper
-        .writeFile(
-          join(savedLocation, `${activeFile.title}.md`),
-          activeFile.body
-        )
-        .then(() => {
-          setUnsavedfileIDs(
-            unsavedfileIDs.filter(id => {
-              return id !== activeFile.id
-            })
-          )
-        })
-    }
+    const { path, body, title } = activeFile
+    fileHelper.writeFile(path, body).then(() => {
+      setUnsavedfileIDs(unsavedfileIDs.filter(id => id !== activeFile.id))
+      if (getAutoSync()) {
+        ipcRenderer.send('upload-file', { key: `${title}.md`, path })
+      }
+    })
   }
   // 点击导入
   const importFiles = () => {
@@ -213,11 +209,37 @@ function App() {
         console.log(err)
       })
   }
+  const activeFileUploaded = () => {
+    const { id } = activeFile
+    const modifiedFile = {
+      ...files[id],
+      isSynced: true,
+      updatedAt: new Date().getTime()
+    }
+    const newFiles = { ...files, [id]: modifiedFile }
+    setFiles(newFiles)
+    saveFilesToStore(newFiles)
+  }
+  const filesUploaded = () => {
+    const newFiles = objToArr(files).reduce((result, file) => {
+      const currentTime = new Date().getTime()
+      result[file.id] = {
+        ...files[file.id],
+        isSynced: true,
+        updatedAt: currentTime
+      }
+      return result
+    }, {})
+    setFiles(newFiles)
+    saveFilesToStore(newFiles)
+  }
   useIpcRenderer({
     'ctreate-file': createNewFile,
     'save-edit-file': saveCurrentFile,
     'search-file': fileSearch,
-    'import-file': importFiles
+    'import-file': importFiles,
+    'files-uploaded': filesUploaded,
+    'active-file-uploaded': activeFileUploaded
   })
   return (
     <div className="App container-fluid px-0">
@@ -270,12 +292,11 @@ function App() {
                   minHeight: '400px'
                 }}
               />
-              <ButtomBtn
-                text="保存"
-                colorClass="btn-success"
-                icon={faSave}
-                onBtnClick={saveCurrentFile}
-              />
+              {activeFile.isSynced && (
+                <span className="sync-status">
+                  已同步，上次同步{timestampToString(activeFile.updatedAt)}
+                </span>
+              )}
             </>
           )}
         </div>

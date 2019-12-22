@@ -30,11 +30,14 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "buildMain": "webpack",
     "eject": "react-scripts eject",
     "dev": "concurrently \"wait-on http://localhost:3000 &&  electron .\" \"cross-env BROWSER=none npm start\"",
     "only": "nodemon --watch main.js --watch src/menuTemplate.js --exec \"electron .\"",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "prepack": "npm run build && npm run buildMain",
+    "predist": "npm run build && npm run buildMain"
   },
   "homepage": "./",
   "build": {
@@ -54,7 +57,10 @@
       "./src/AppWindow.js",
       "./src/utils/QiniuManager.js"
     ],
-    "extends": null
+    "extends": null,
+    "directories": {
+      "buildResources": "assets"
+    }
   },
   "eslintConfig": {
     "extends": "react-app"

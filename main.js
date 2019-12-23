@@ -12,6 +12,7 @@ const AppWindow = require('./src/AppWindow')
 const Store = require('electron-store')
 const settingsStore = new Store({ name: 'Settings' })
 const QiniuManager = require('./src/utils/QiniuManager')
+const { autoUpdater } = require('electron-updater')
 let mainWin, settingsWin
 const createManager = () => {
   const accessKey = settingsStore.get('accessKey')
@@ -20,6 +21,32 @@ const createManager = () => {
   return new QiniuManager(accessKey, secretKey, bucketName)
 }
 app.on('ready', () => {
+  autoUpdater.autoDownload = false
+  autoUpdater.checkForUpdatesAndNotify()
+  autoUpdater.on('error', error => {
+    dialog.showErrorBox('Error', error == null ? 'unknow' : error.status)
+  })
+  autoUpdater.on('update-available', () => {
+    dialog.showMessageBox(
+      {
+        type: 'info',
+        title: '发现新版本,是否下载',
+        message: '发现新版本,是否下载',
+        buttons: ['是', '否']
+      },
+      buttonIndex => {
+        if (buttonIndex === 0) {
+          autoUpdater.downloadUpdate()
+        }
+      }
+    )
+  })
+  autoUpdater.on('update-not-available', () => {
+    dialog.showMessageBox({
+      title: '新版本',
+      message: '当前已是最新版本'
+    })
+  })
   const url = isDev ? 'http://localhost:3000' : ''
   mainWin = new AppWindow(url, {
     width: 1024,

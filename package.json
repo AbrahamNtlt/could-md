@@ -1,65 +1,92 @@
 {
   "name": "cloud-doc",
-  "version": "0.1.0",
-  "author": "achieve",
-  "private": true,
+  "version": "1.0.0",
   "main": "main.js",
+  "description": "Online Markdown Editor using Qiniu cloud service",
+  "author": {
+    "name": "Viking Zhang",
+    "email": "vikingmute@gmail.com"
+  },
+  "repository": "https://github.com/vikingmute/clouddoc",
+  "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.25",
-    "@fortawesome/free-brands-svg-icons": "^5.12.0",
-    "@fortawesome/free-solid-svg-icons": "^5.11.2",
-    "@fortawesome/react-fontawesome": "^0.1.8",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "axios": "^0.19.0",
-    "bootstrap": "^4.4.1",
-    "class": "^0.1.4",
-    "classnames": "^2.2.6",
-    "electron-is-dev": "^1.1.0",
-    "electron-store": "^5.1.0",
-    "node-sass": "^4.13.0",
-    "qiniu": "^7.2.2",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-scripts": "3.3.0",
-    "react-simplemde-editor": "^4.1.0",
-    "uuid": "^3.3.3"
+    "bootstrap": "^4.3.1",
+    "electron-store": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "buildMain": "webpack",
     "eject": "react-scripts eject",
-    "dev": "concurrently \"wait-on http://localhost:3000 &&  electron .\" \"cross-env BROWSER=none npm start\"",
-    "only": "nodemon --watch main.js --watch src/menuTemplate.js --exec \"electron .\"",
+    "buildMain": "webpack",
+    "onlyEle": "nodemon --watch main.js --watch src/menuTemplate.js --exec \"electron .\"",
+    "dev": "concurrently \"wait-on http://localhost:3000 && electron .\" \"cross-env BROWSER=none npm start\"",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
+    "release": "cross-env GH_TOKEN=6013d018a6be447d5f3c1807e3f55e403dc1e1b5 electron-builder",
     "prepack": "npm run build && npm run buildMain",
     "predist": "npm run build && npm run buildMain"
   },
   "homepage": "./",
   "build": {
-    "electronDownload": {
-      "mirror": "https://npm.taobao.org/mirrors/electron/"
-    },
     "appId": "cloudDoc",
-    "productName": "练手文案",
+    "productName": "七牛云文档",
     "copyright": "Copyright © 2019 ${author}",
     "files": [
       "build/**/*",
       "node_modules/**/*",
       "settings/**/*",
-      "package.json",
-      "main.js",
-      "./src/menuTemplate.js",
-      "./src/AppWindow.js",
-      "./src/utils/QiniuManager.js"
+      "package.json"
     ],
-    "extends": null,
     "directories": {
       "buildResources": "assets"
+    },
+    "extraMetadata": {
+      "main": "./build/main.js"
+    },
+    "publish": [
+      "github"
+    ],
+    "extends": null,
+    "mac": {
+      "category": "public.app-category.productivity",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "background": "assets/appdmg.png",
+      "icon": "assets/icon.icns",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 380,
+          "y": 280,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 110,
+          "y": 280,
+          "type": "file"
+        }
+      ],
+      "window": {
+        "width": 500,
+        "height": 500
+      }
+    },
+    "win": {
+      "target": [
+        "msi",
+        "nsis"
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName}-Web-Setup-${version}.${ext}",
+      "publisherName": "Viking Zhang"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": false
     }
   },
   "eslintConfig": {
@@ -78,10 +105,27 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^5.0.1",
-    "cross-env": "^6.0.3",
-    "electron": "^7.1.4",
+    "@fortawesome/fontawesome-svg-core": "^1.2.19",
+    "@fortawesome/free-brands-svg-icons": "^5.9.0",
+    "@fortawesome/free-solid-svg-icons": "^5.9.0",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "axios": "^0.19.0",
+    "classnames": "^2.2.6",
+    "concurrently": "^4.1.1",
+    "cross-env": "^5.2.0",
+    "electron": "^5.0.6",
     "electron-builder": "^21.2.0",
-    "wait-on": "^3.3.0"
+    "electron-is-dev": "^1.1.0",
+    "electron-store": "^4.0.0",
+    "node-sass": "^4.12.0",
+    "qiniu": "^7.2.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
+    "react-simplemde-editor": "^4.1.0",
+    "uuid": "^3.3.2",
+    "wait-on": "^3.3.0",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10"
   }
 }

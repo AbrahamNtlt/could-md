@@ -21,8 +21,11 @@ const createManager = () => {
   return new QiniuManager(accessKey, secretKey, bucketName)
 }
 app.on('ready', () => {
+  if (isDev) {
+    autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
+  }
   autoUpdater.autoDownload = false
-  autoUpdater.checkForUpdatesAndNotify()
+  autoUpdater.checkForUpdates()
   autoUpdater.on('error', error => {
     dialog.showErrorBox('Error', error == null ? 'unknow' : error.status)
   })
@@ -46,6 +49,23 @@ app.on('ready', () => {
       title: '新版本',
       message: '当前已是最新版本'
     })
+  })
+  autoUpdater.on('download-progress', ProgressInfo => {})
+  autoUpdater.on('checking-for-update', () => {
+    console.log('checking for update ...')
+  })
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox(
+      {
+        title: '安装更新',
+        message: '下载完毕,应用将重启进行安装'
+      },
+      () => {
+        setImmediate(() => {
+          autoUpdater.quitAndInstall()
+        })
+      }
+    )
   })
   const url = isDev ? 'http://localhost:3000' : ''
   mainWin = new AppWindow(url, {
